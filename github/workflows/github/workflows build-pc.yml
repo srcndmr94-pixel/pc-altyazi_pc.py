@@ -3,17 +3,38 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+
 jobs:
   build:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+
+      - name: Kaynak zipini ac
+        shell: bash
+        run: |
+          rm -rf project
+          mkdir project
+          unzip -q altyazi-src.zip -d project
+          ls project/pc
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install pyinstaller mss pillow winocr deep-translator
-      - run: pyinstaller --onefile --name AltyaziPC --collect-all winocr --collect-submodules winrt --collect-submodules winsdk pc/altyazi_pc.py
+
+      - name: Bagimliliklar
+        run: pip install pyinstaller mss numpy rapidocr-onnxruntime
+
+      - name: Derle
+        run: >
+          pyinstaller --onefile --noconsole --name LingoPlay
+          --collect-all rapidocr_onnxruntime
+          --collect-all onnxruntime
+          project/pc/lingoplay_pc.py
+
       - uses: actions/upload-artifact@v4
         with:
-          name: altyazi-pc-exe
-          path: dist/AltyaziPC.exe
+          name: lingoplay-pc
+          path: dist/LingoPlay.exe
+          if-no-files-found: error
+
